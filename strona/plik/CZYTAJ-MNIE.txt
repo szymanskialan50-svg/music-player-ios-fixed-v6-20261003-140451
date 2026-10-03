@@ -1,0 +1,6 @@
+Wrzuć tutaj swój plik aplikacji i nazwij go dokładnie:
+
+    MusicPlayer.ipa
+
+Strona (../index.html) linkuje właśnie do plik/MusicPlayer.ipa.
+Limit GitHuba: 100 MB na plik. Większy plik wrzuć jako "Release" i podmień link w index.html.

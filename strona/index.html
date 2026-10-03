@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Music Player — odtwarzacz muzyki na iPhone'a</title>
+<meta name="description" content="Music Player: darmowy odtwarzacz muzyki na iPhone'a. Bez konta, bez reklam.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="ikona.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--k:#000;--w:#fff;--g:#8a8a8a;--serif:"Instrument Serif","Times New Roman",serif;--sans:"Inter",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;--e:cubic-bezier(.16,1,.3,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--k);scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--k);color:var(--w);font:400 17px/1.55 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+.mono{font:500 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+/* progress + nav */
+#bar{position:fixed;top:0;left:0;height:2px;width:100%;background:var(--w);transform:scaleX(0);transform-origin:0 50%;z-index:60;mix-blend-mode:difference}
+nav{position:fixed;inset:0 0 auto;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:calc(18px + env(safe-area-inset-top)) clamp(20px,5vw,56px) 18px;mix-blend-mode:difference;color:#fff;transition:transform .5s var(--e)}
+nav.hide{transform:translateY(-110%)}
+nav b{font:400 24px/1 var(--serif);letter-spacing:.01em}
+nav a.m{text-decoration:none}
+nav a.m:hover{opacity:.6}
+/* intro */
+#intro{position:fixed;inset:0;background:var(--k);z-index:100;display:grid;place-items:center;transition:transform 1.1s var(--e) .1s}
+#intro.go{transform:translateY(-100%)}
+#intro .t{font:400 clamp(44px,11vw,140px)/1 var(--serif);display:flex;overflow:hidden;padding:.05em 0}
+#intro .t span{display:inline-block;transform:translateY(110%);animation:up .9s var(--e) forwards}
+#intro .s{position:absolute;bottom:calc(36px + env(safe-area-inset-bottom));color:var(--g);opacity:0;animation:fade 1s 1.1s forwards}
+@keyframes up{to{transform:none}}@keyframes fade{to{opacity:1}}
+/* hero */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:140px 0 48px;position:relative}
+.hero h1{font:400 clamp(54px,12.5vw,200px)/.92 var(--serif);letter-spacing:-.025em}
+.hero h1 .l{display:block;overflow:hidden;padding-bottom:.08em}
+.hero h1 .l>span{display:block;transform:translateY(105%);transition:transform 1.3s var(--e)}
+.ready .hero h1 .l>span{transform:none}
+.hero h1 .l:nth-child(2)>span{transition-delay:.12s}
+.hero h1 em{font-style:italic;color:var(--g)}
+.hero .row{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-top:48px;flex-wrap:wrap;opacity:0;transform:translateY(20px);transition:all 1.2s var(--e) .5s}
+.ready .hero .row{opacity:1;transform:none}
+.hero p{max-width:30em;font-size:clamp(17px,1.7vw,21px);color:#cfcfcf}
+.btn{display:inline-flex;align-items:center;gap:14px;background:var(--w);color:var(--k);padding:18px 30px;border-radius:99px;font:600 15px/1 var(--sans);text-decoration:none;transition:transform .35s var(--e),background .3s,color .3s;border:0;cursor:pointer}
+.btn svg{width:18px;height:18px;transition:transform .35s var(--e)}
+.btn:hover svg{transform:translateY(3px)}
+.btn.off{opacity:.3;pointer-events:none}
+.cue{position:absolute;right:clamp(20px,5vw,56px);top:50%;writing-mode:vertical-rl;color:var(--g);display:flex;align-items:center;gap:14px}
+.cue i{width:1px;height:64px;background:linear-gradient(var(--w) 50%,transparent 50%) 0 0/1px 200%;animation:drip 2s linear infinite}
+@keyframes drip{to{background-position:0 -100%}}
+/* marquee */
+.mq{border-block:1px solid #2a2a2a;overflow:hidden;padding:26px 0;white-space:nowrap}
+.mq div{display:inline-flex;animation:mq 28s linear infinite}
+.mq span{font:italic 400 clamp(32px,5vw,64px)/1 var(--serif);padding-right:.6em}
+.mq span::after{content:"✦";font:400 .5em var(--sans);margin-left:.6em;vertical-align:.25em}
+@keyframes mq{to{transform:translateX(-50%)}}
+/* story (sticky) */
+.story{height:320vh;position:relative}
+.story .pin{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;justify-content:center}
+.story .words{font:400 clamp(56px,13vw,210px)/1 var(--serif);letter-spacing:-.03em}
+.story .words div{color:#2b2b2b;transition:color .6s var(--e),transform .8s var(--e);transform:translateX(0)}
+.story .words div.on{color:var(--w);transform:translateX(.12em)}
+.story .words div.done{color:#6a6a6a}
+.story .desc{position:relative;height:5.5em;margin-top:32px;max-width:32em;color:#cfcfcf;font-size:clamp(17px,1.8vw,22px)}
+.story .desc p{position:absolute;inset:0 auto auto 0;opacity:0;transform:translateY(16px);transition:all .7s var(--e)}
+.story .desc p.on{opacity:1;transform:none}
+.story .pg{position:absolute;right:clamp(20px,5vw,56px);bottom:calc(40px + env(safe-area-inset-bottom));color:var(--g)}
+/* white section */
+.inv{background:var(--w);color:var(--k)}
+.feat{padding:clamp(80px,12vw,160px) 0}
+.feat h2,.steps h2{font:400 clamp(44px,8vw,120px)/.95 var(--serif);letter-spacing:-.02em;margin-bottom:clamp(40px,6vw,80px)}
+.feat h2 em,.steps h2 em{font-style:italic;color:var(--g)}
+.fr{display:grid;grid-template-columns:90px 1fr 1.2fr;gap:24px;align-items:baseline;padding:34px 0;border-top:1px solid #d6d6d6;transition:padding .5s var(--e)}
+.fr:last-child{border-bottom:1px solid #d6d6d6}
+.fr .n{color:var(--g)}
+.fr h3{font:400 clamp(28px,3.4vw,46px)/1.05 var(--serif)}
+.fr p{color:#444}
+.fr:hover{padding-left:20px}
+/* steps */
+.steps{padding:clamp(80px,12vw,160px) 0}
+.sl{position:relative;padding-left:clamp(48px,7vw,96px)}
+.sl::before,.sl .fill{content:"";position:absolute;left:11px;top:8px;bottom:8px;width:1px;background:#2e2e2e}
+.sl .fill{background:var(--w);transform-origin:top;transform:scaleY(var(--p,0));transition:transform .15s linear}
+.st{position:relative;padding:0 0 clamp(44px,6vw,80px)}
+.st::before{content:"";position:absolute;left:calc(-1*clamp(48px,7vw,96px) + 5px);top:9px;width:13px;height:13px;border-radius:50%;background:var(--k);border:1px solid #555;transition:all .5s var(--e)}
+.st.in::before{background:var(--w);border-color:var(--w);box-shadow:0 0 0 6px #ffffff1c}
+.st h3{font:400 clamp(30px,4.6vw,64px)/1.05 var(--serif);margin-bottom:12px}
+.st p{color:#bdbdbd;max-width:36em}
+.note{margin-top:8px;color:var(--g);font-size:14px}
+/* cta */
+.cta{padding:clamp(90px,14vw,200px) 0;text-align:center}
+.cta h2{font:400 clamp(56px,13vw,210px)/.92 var(--serif);letter-spacing:-.03em;margin-bottom:48px}
+.cta h2 em{font-style:italic;color:var(--g)}
+.cta .btn{background:var(--k);color:var(--w);padding:24px 44px;font-size:17px}
+.cta .btn:hover{background:#222}
+.cta small{display:block;margin-top:22px;color:var(--g)}
+footer{border-top:1px solid #d6d6d6;padding:30px 0 calc(40px + env(safe-area-inset-bottom));font-size:13px;color:#666;background:var(--w)}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+/* reveal */
+.r{opacity:0;transform:translateY(40px);transition:opacity 1s var(--e),transform 1.1s var(--e)}
+.r.in{opacity:1;transform:none}
+@media(max-width:760px){.fr{grid-template-columns:44px 1fr;row-gap:10px}.fr p{grid-column:2}.cue{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}#intro{display:none}.hero h1 .l>span,.hero .row,.r{opacity:1;transform:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="intro"><div class="t" aria-label="Music Player"></div><div class="s mono">Przewiń, aby przejść dalej</div></div>
+<nav id="nav"><b>Music Player</b><a class="m mono" href="#instalacja">Instalacja</a></nav>
+
+<header class="hero wrap">
+  <h1><span class="l"><span>Muzyka.</span></span><span class="l"><span><em>Bez reszty.</em></span></span></h1>
+  <div class="row">
+    <p>Odtwarzacz na iPhone'a. Szukasz w YouTube, dodajesz własne pliki, słuchasz z zablokowanym ekranem. Bez konta, bez reklam, za darmo.</p>
+    <a class="btn dl" href="plik/MusicPlayer.ipa" download>Pobierz .ipa <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v14m0 0-6-6m6 6 6-6"/></svg></a>
+  </div>
+  <div class="cue mono"><i></i>Scroll</div>
+</header>
+
+<div class="mq" aria-hidden="true"><div>
+  <span>Bez logowania</span><span>Bez reklam</span><span>Za darmo</span><span>Gra w tle</span>
+  <span>Bez logowania</span><span>Bez reklam</span><span>Za darmo</span><span>Gra w tle</span>
+</div></div>
+
+<section class="story" id="story">
+  <div class="pin wrap">
+    <div class="words"><div>Szukaj.</div><div>Słuchaj.</div><div>Śpiewaj.</div></div>
+    <div class="desc">
+      <p>Wyszukiwarka YouTube, wklejanie linków i całych playlist oraz biblioteka plików z Twojego telefonu. Wszystko w jednym miejscu.</p>
+      <p>Muzyka gra dalej po zablokowaniu ekranu. Pauza, play i przewijanie o 10 sekund prosto z ekranu blokady.</p>
+      <p>Teksty pobierają się same i podświetlają w trakcie utworu. Jeśli nie ma ich dla danej piosenki, aplikacja po prostu ich nie pokazuje.</p>
+    </div>
+    <div class="pg mono"><span id="pgn">01</span> / 03</div>
+  </div>
+</section>
+
+<div class="inv">
+  <section class="feat wrap">
+    <h2 class="r">Mało funkcji.<br><em>Dobrze zrobione.</em></h2>
+    <div class="fr r"><span class="n mono">01</span><h3>Biblioteka</h3><p>Pliki z urządzenia i utwory z YouTube w jednej bibliotece, z playlistami, losowaniem i powtarzaniem.</p></div>
+    <div class="fr r"><span class="n mono">02</span><h3>Ekran blokady</h3><p>Okładka, tytuł, pasek postępu i przyciski sterowania. Do wyboru: przewijanie o 10 sekund albo poprzedni i następny utwór.</p></div>
+    <div class="fr r"><span class="n mono">03</span><h3>Wygląd</h3><p>Jasny, ciemny lub systemowy motyw, własny kolor akcentu i sześć języków interfejsu.</p></div>
+    <div class="fr r"><span class="n mono">04</span><h3>Prywatność</h3><p>Bez konta i bez reklam. Biblioteka i ustawienia zostają na Twoim telefonie.</p></div>
+  </section>
+</div>
+
+<section class="steps wrap" id="instalacja">
+  <h2 class="r">Cztery kroki<br><em>do instalacji.</em></h2>
+  <div class="sl" id="sl"><div class="fill"></div>
+    <div class="st"><h3>Pobierz plik</h3><p>Pobierz plik .ipa na komputer przyciskiem poniżej.</p></div>
+    <div class="st"><h3>Podłącz iPhone'a</h3><p>Zainstaluj na komputerze Sideloadly albo AltStore i podłącz telefon kablem.</p></div>
+    <div class="st"><h3>Podpisz aplikację</h3><p>Przeciągnij plik .ipa do programu i zaloguj się własnym Apple ID. Służy tylko do podpisania aplikacji.</p></div>
+    <div class="st"><h3>Zaufaj i słuchaj</h3><p>Na iPhonie: Ustawienia, Ogólne, VPN i zarządzanie urządzeniem. Wybierz swoje Apple ID i zaufaj.</p><p class="note">Z darmowym Apple ID podpis wygasa po 7 dniach. Wtedy instalujesz aplikację ponownie.</p></div>
+  </div>
+</section>
+
+<div class="inv">
+  <section class="cta wrap">
+    <h2 class="r">Zacznij<br><em>słuchać.</em></h2>
+    <a class="btn dl r" href="plik/MusicPlayer.ipa" download>Pobierz .ipa <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v14m0 0-6-6m6 6 6-6"/></svg></a>
+    <small id="dlnote">Wersja na iOS</small>
+  </section>
+  <footer><div class="wrap"><span>© 2026 x3lanix</span><span>Muzyka pochodzi z YouTube. Aplikacja nie jest powiązana z Google ani Apple.</span></div></footer>
+</div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+// intro
+const t=$('#intro .t');'Music Player'.split('').forEach((c,i)=>{const s=document.createElement('span');s.textContent=c===' '?'\u00a0':c;s.style.animationDelay=(i*55)+'ms';t.appendChild(s)});
+let opened=false;
+function open(){if(opened)return;opened=true;$('#intro').classList.add('go');document.body.classList.add('ready');document.documentElement.style.overflow='';setTimeout(()=>$('#intro').remove(),1500)}
+if(rm){document.body.classList.add('ready')}else{
+  document.documentElement.style.overflow='hidden';
+  ['wheel','touchmove','keydown','click'].forEach(e=>addEventListener(e,()=>{if(performance.now()>1300)open()},{passive:true}));
+  setTimeout(open,6000);
+}
+// progress, nav, story, steps
+const bar=$('#bar'),nav=$('#nav'),story=$('#story'),words=$$('.words div'),descs=$$('.desc p'),pgn=$('#pgn'),sl=$('#sl'),sts=$$('.st');
+let lastY=0;
+function frame(){
+  const y=scrollY,h=document.documentElement.scrollHeight-innerHeight;
+  bar.style.transform='scaleX('+(h>0?y/h:0)+')';
+  nav.classList.toggle('hide',y>lastY&&y>200);lastY=y;
+  const r=story.getBoundingClientRect(),p=Math.min(.999,Math.max(0,-r.top/(r.height-innerHeight))),idx=Math.floor(p*3);
+  words.forEach((w,i)=>{w.classList.toggle('on',i===idx);w.classList.toggle('done',i<idx)});
+  descs.forEach((d,i)=>d.classList.toggle('on',i===idx));pgn.textContent='0'+(idx+1);
+  const sr=sl.getBoundingClientRect(),sp=Math.min(1,Math.max(0,(innerHeight*.6-sr.top)/sr.height));
+  sl.style.setProperty('--p',sp);
+  sts.forEach(s=>s.classList.toggle('in',s.getBoundingClientRect().top<innerHeight*.62));
+}
+addEventListener('scroll',()=>requestAnimationFrame(frame),{passive:true});addEventListener('resize',frame);frame();
+// reveal
+const io=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.15});
+$$('.r').forEach((el,i)=>{el.style.transitionDelay=(i%4)*70+'ms';io.observe(el)});
+// download availability
+fetch('plik/MusicPlayer.ipa',{method:'HEAD'}).then(r=>{if(!r.ok)throw 0}).catch(()=>{
+  if(location.protocol==='file:')return;
+  $$('.dl').forEach(b=>b.classList.add('off'));$('#dlnote').textContent='Plik pojawi się tu wkrótce.';
+});
+// magnetic button
+if(!rm&&matchMedia('(hover:hover)').matches)$$('.btn').forEach(b=>{
+  b.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.18}px,${(e.clientY-r.top-r.height/2)*.3}px)`});
+  b.addEventListener('mouseleave',()=>b.style.transform='');
+});
+</script>
+</body>
+</html>
